@@ -1,0 +1,66 @@
+name: Code Quality Checks - Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ci:
+    name: Full pipeline (format, migrations, tests)
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Descargar el código
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Configurar Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 3️⃣ Cachear dependencias pip (dev requirements)
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements-dev.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      # 4️⃣ Instalar dependencias de desarrollo
+      - name: Install dev dependencies
+        run: pip install -r requirements-dev.txt
+
+      # 5️⃣ Verificar formato y tipos
+      - name: Format & type checks
+        run: make check
+
+      # 6️⃣ Ejecutar migraciones (necesario antes de los tests)
+      - name: Apply Alembic migrations
+        run: make alembic-upgrade
+        env:
+          PROJECT_NAME: BackendBase
+          ENVIRONMENT: test
+          DB_URL_SYNC: sqlite:///dev.db
+          DB_URL_ASYNC: sqlite+aiosqlite:///dev.db
+          PYTHONPATH: src
+
+      # 7️⃣ Ejecutar tests (ya con la base migrada)
+      - name: Run tests
+        run: make test
+        env:
+          PROJECT_NAME: BackendBase
+          ENVIRONMENT: test
+          DB_URL_SYNC: sqlite:///dev.db
+          DB_URL_ASYNC: sqlite+aiosqlite:///dev.db
+          API_KEY: test-api-key
+
+      # 8️⃣ Subir reporte de coverage
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml

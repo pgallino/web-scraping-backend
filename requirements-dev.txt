@@ -1,0 +1,31 @@
+# Framework y Servidor
+fastapi
+uvicorn[standard]
+
+# Gestión de Configuración
+pydantic-settings
+python-dotenv
+
+# Herramientas de Calidad de Código (Solo Formato)
+black
+isort
+mypy
+
+# Testing
+pytest
+pytest-cov
+pytest-bdd
+httpx
+pytest-pythonpath
+pytest-asyncio
+
+# ORM y migraciones
+SQLAlchemy>=2.0
+aiosqlite
+alembic
+psycopg2-binary
+asyncpg
+
+# CLI
+typer
+click

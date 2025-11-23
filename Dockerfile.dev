@@ -1,0 +1,26 @@
+FROM python:3.12-slim
+
+# Development image (includes dev/test tooling). Use this Dockerfile for local
+# development and iterative work. For production builds use Dockerfile.prod.
+
+# No escribir archivos pyc y salida sin buffer
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Instalar 'make' para poder usar 'make' dentro del contenedor (útil en dev)
+# Nota: usamos --no-install-recommends para mantener la imagen pequeña
+RUN apt-get update && apt-get install -y --no-install-recommends make && rm -rf /var/lib/apt/lists/*
+
+# Copiar requirements de desarrollo e instalar (aprovecha cache de docker)
+COPY requirements-dev.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements-dev.txt
+
+# Copiar el resto del código
+COPY . .
+
+# Development image does not install or use an entrypoint script. The
+# development orchestration (docker-compose.dev.yml + Makefile) controls
+# whether the container stays idle for exec or runs commands interactively.

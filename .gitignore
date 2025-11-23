@@ -1,0 +1,19 @@
+# Directorios y Archivos de Python
+# Ignorar archivos compilados (bytecode)
+__pycache__/
+*.pyc
+*.pyo
+
+# Base de datos local de desarrollo (SQLite)
+dev.db
+
+# Directorios de cache
+.pytest_cache/
+.mypy_cache/
+
+# Reportes de cobertura
+.coverage
+.coverage.*
+htmlcov/
+
+.env

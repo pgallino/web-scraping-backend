@@ -1,0 +1,7 @@
+[run]
+omit =
+    src/adapters/api/*
+    src/domain/exceptions/*
+    src/adapters/db/session.py
+    src/domain/repositories/tool_repository.py
+    src/**/__init__.py

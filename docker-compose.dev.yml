@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: backend-base:dev
+    container_name: backend-base-api-dev
+    # Run the API in dev mode so it's reachable from the host.
+    command: ["uvicorn", "src.application.api_app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    env_file:
+      - .env
+    environment:
+      - PORT=8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app:cached
+
+  cli:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: backend-base:dev
+    container_name: backend-base-cli-dev
+    # Keep the CLI container alive so you can exec into it and run commands interactively.
+    env_file:
+      - .env
+    entrypoint: ["tail", "-f", "/dev/null"]
+    volumes:
+      - ./:/app:cached
+

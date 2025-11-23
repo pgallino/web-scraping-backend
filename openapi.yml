@@ -1,0 +1,151 @@
+openapi: 3.0.3
+info:
+  title: Backend Base API
+  version: "0.1.0"
+  description: API minimal for Backend Base template (health + user endpoints)
+servers:
+  - url: https://backend-base-53l1.onrender.com
+paths:
+  /:
+    get:
+      summary: Health check
+      tags:
+        - health
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project_name:
+                    type: string
+                  environment:
+                    type: string
+                example:
+                  project_name: BackendBase
+                  environment: dev
+  /tools:
+    post:
+      summary: Create tool
+      tags:
+        - tools
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToolCreateRequest'
+            example:
+              name: fastapi
+              description: web framework
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tool'
+    get:
+      summary: List tools
+      tags:
+        - tools
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tool'
+  /tools/{tool_id}:
+    get:
+      summary: Get tool by id
+      tags:
+        - tools
+      parameters:
+        - in: path
+          name: tool_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Tool found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tool'
+        '404':
+          description: Tool not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                example:
+                  detail: Tool not found
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+      example:
+        id: 1
+        username: pedro
+        name: Pedro Example
+        email: pedro@example.com
+    UserCreateRequest:
+      type: object
+      required:
+        - username
+        - name
+        - email
+      properties:
+        username:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+      example:
+        username: pedro
+        name: Pedro Example
+        email: pedro@example.com
+    Tool:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+      example:
+        id: 1
+        name: fastapi
+        description: web framework
+    ToolCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+      example:
+        name: fastapi
+        description: web framework
