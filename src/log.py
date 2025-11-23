@@ -47,8 +47,6 @@ def setup_logging():
 
     # Reduce noise from very chatty third-party libraries unless debugging
     if level > logging.DEBUG:
-        logging.getLogger("aiosqlite").setLevel(logging.WARNING)
-        logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
         logging.getLogger("asyncio").setLevel(logging.WARNING)
         logging.getLogger("uvicorn").setLevel(logging.WARNING)
 

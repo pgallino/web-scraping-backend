@@ -26,126 +26,58 @@ paths:
                 example:
                   project_name: BackendBase
                   environment: dev
-  /tools:
+  /scrape:
     post:
-      summary: Create tool
+      summary: Scrape a web page and extract elements by selectors
       tags:
-        - tools
+        - scrape
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ToolCreateRequest'
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+                selectors:
+                  type: object
+                  additionalProperties:
+                    type: string
+                headers:
+                  type: object
+                  additionalProperties:
+                    type: string
+                timeout:
+                  type: number
+                  format: float
+              required:
+                - url
+                - selectors
             example:
-              name: fastapi
-              description: web framework
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Tool'
-    get:
-      summary: List tools
-      tags:
-        - tools
+              url: "https://example.com"
+              selectors:
+                h1: "h1"
       responses:
         '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Tool'
-  /tools/{tool_id}:
-    get:
-      summary: Get tool by id
-      tags:
-        - tools
-      parameters:
-        - in: path
-          name: tool_id
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Tool found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Tool'
-        '404':
-          description: Tool not found
+          description: Scraping result
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  detail:
+                  url:
                     type: string
+                    format: uri
+                  data:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
                 example:
-                  detail: Tool not found
-components:
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-        username:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-      example:
-        id: 1
-        username: pedro
-        name: Pedro Example
-        email: pedro@example.com
-    UserCreateRequest:
-      type: object
-      required:
-        - username
-        - name
-        - email
-      properties:
-        username:
-          type: string
-        name:
-          type: string
-        email:
-          type: string
-      example:
-        username: pedro
-        name: Pedro Example
-        email: pedro@example.com
-    Tool:
-      type: object
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        description:
-          type: string
-      example:
-        id: 1
-        name: fastapi
-        description: web framework
-    ToolCreateRequest:
-      type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-      example:
-        name: fastapi
-        description: web framework
+                  url: "https://example.com/"
+                  data:
+                    h1:
+                      - "Example Domain"

@@ -1,10 +1,9 @@
-import json
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
 from src.adapters.api.middleware import add_middlewares
-from src.adapters.api.routes import health, tools
+from src.adapters.api.routes import health, scrape
 from src.application.factory import create_facade
 from src.config import api_settings, ensure_api_required_env_vars
 from src.log import logger
@@ -41,4 +40,4 @@ add_middlewares(app, api_settings)
 
 # Include routers
 app.include_router(health.router)  # type: ignore
-app.include_router(tools.router)  # type: ignore
+app.include_router(scrape.router)  # type: ignore

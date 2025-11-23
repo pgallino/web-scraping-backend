@@ -19,11 +19,6 @@ class CommonSettings(BaseSettings):
 
     PROJECT_NAME: str
     ENVIRONMENT: str
-    # Note: CORS (allowed origins) is API-specific and defined on APISettings.
-
-    DB_URL_ASYNC: str
-    DB_URL_SYNC: Optional[str] = None
-    SQL_ECHO: bool = False
     # Global log level for the application. Can be overridden per-environment.
     # Expected values: DEBUG, INFO, WARNING, ERROR, CRITICAL
     LOG_LEVEL: str = "INFO"
@@ -40,14 +35,6 @@ class APISettings(CommonSettings):
     # - Otherwise, set ALLOWED_ORIGINS to a comma-separated list of origins.
     ALLOWED_ORIGINS: Optional[str] = None
     ALLOW_ALL_ORIGINS: bool = False
-
-
-class CLISettings(CommonSettings):
-    """Settings used by CLI application. Intentionally does not expose
-    API_KEY so CLI code cannot accidentally rely on API-only configuration.
-    """
-
-    pass
 
 
 # Developer convenience: if a local .env file exists in the repo root, load it
@@ -91,7 +78,6 @@ def _ensure_required_env_vars(required: List[str]) -> None:
 _required_env_vars = [
     "PROJECT_NAME",
     "ENVIRONMENT",
-    "DB_URL_ASYNC",
 ]
 
 # Fail fast with a clear message if any required env var is missing.
@@ -133,7 +119,6 @@ def ensure_common_required_env_vars() -> None:
 # continue to work. New code should import `api_settings` or `cli_settings`
 # explicitly to make its intent clear.
 api_settings = APISettings()  # type: ignore[call-arg]
-cli_settings = CLISettings()  # type: ignore[call-arg]
 
 # Minimal/common settings object for adapters that only need core values
 # (DB urls, SQL_ECHO, PROJECT_NAME, ENVIRONMENT). Use this from modules

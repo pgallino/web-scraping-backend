@@ -17,17 +17,3 @@ services:
       - "8000:8000"
     volumes:
       - ./:/app:cached
-
-  cli:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    image: backend-base:dev
-    container_name: backend-base-cli-dev
-    # Keep the CLI container alive so you can exec into it and run commands interactively.
-    env_file:
-      - .env
-    entrypoint: ["tail", "-f", "/dev/null"]
-    volumes:
-      - ./:/app:cached
-
