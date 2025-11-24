@@ -85,7 +85,9 @@ def add_middlewares(app: FastAPI, settings: Any) -> None:
         """Ensure a request id exists for every request and populate the log context."""
         rid = request.headers.get("X-Request-ID") or new_request_id()
         # capture client agent (may be absent for some clients)
-        client_agent = request.headers.get("User-Agent") or request.headers.get("X-Agent")
+        client_agent = request.headers.get("User-Agent") or request.headers.get(
+            "X-Agent"
+        )
         request_id_ctx_var.set(rid)
         logger.debug(
             "HTTP request start %s %s request_id=%s agent=%s",
