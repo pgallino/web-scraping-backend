@@ -48,6 +48,8 @@ def _default_allow_headers() -> Iterable[str]:
         "X-API-Key",
         "X-Requested-With",
         "X-Request-ID",
+        # Allow a custom agent header if clients want to supply one
+        "X-Agent",
     ]
 
 
@@ -82,12 +84,15 @@ def add_middlewares(app: FastAPI, settings: Any) -> None:
     async def add_request_id_middleware(request: Request, call_next):
         """Ensure a request id exists for every request and populate the log context."""
         rid = request.headers.get("X-Request-ID") or new_request_id()
+        # capture client agent (may be absent for some clients)
+        client_agent = request.headers.get("User-Agent") or request.headers.get("X-Agent")
         request_id_ctx_var.set(rid)
         logger.debug(
-            "HTTP request start %s %s request_id=%s",
+            "HTTP request start %s %s request_id=%s agent=%s",
             request.method,
             request.url.path,
             rid,
+            client_agent,
         )
         try:
             response = await call_next(request)
@@ -95,10 +100,11 @@ def add_middlewares(app: FastAPI, settings: Any) -> None:
             request_id_ctx_var.set("-")
         response.headers["X-Request-ID"] = rid
         logger.debug(
-            "HTTP request end %s %s request_id=%s status=%s",
+            "HTTP request end %s %s request_id=%s status=%s agent=%s",
             request.method,
             request.url.path,
             rid,
             getattr(response, "status_code", "-"),
+            client_agent,
         )
         return response
