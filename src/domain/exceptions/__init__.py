@@ -30,10 +30,23 @@ class ConflictError(DomainError):
     """Raised when a domain-level conflict occurs (e.g. duplicate)."""
 
 
+class ScrapeError(DomainError):
+    """Raised when a scraping operation fails (network / HTTP / parsing).
+
+    `status_code` may contain the remote HTTP status code (e.g. 403)
+    when the error originated from an HTTP response.
+    """
+
+    def __init__(self, message: str, status_code: int | None = None):
+        super().__init__(message)
+        self.status_code = status_code
+
+
 __all__ = [
     "DomainError",
     "RepositoryNotConfiguredError",
     "ValidationError",
     "NotFoundError",
     "ConflictError",
+    "ScrapeError",
 ]

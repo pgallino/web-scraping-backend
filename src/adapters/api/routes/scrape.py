@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, HttpUrl
 
+from src.domain.exceptions import ScrapeError
 from src.domain.scrape import ScrapeRequest as DomainScrapeRequest
 from src.log import logger
 
@@ -40,9 +41,23 @@ async def scrape_route(request: ScrapeRequest):
     )
     try:
         result = await api_facade.scrape(domain_req)
-    except Exception as exc:
+    except ScrapeError as exc:
+        # Remote site responded with an error or network problem occurred.
         logger.exception("Facade error during scrape %s", request.url)
-        raise HTTPException(status_code=500, detail=str(exc))
+        # If the remote returned a known HTTP status (e.g. 403), surface it.
+        if getattr(exc, "status_code", None) == 403:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "Remote site returned 403 Forbidden. "
+                    "Try adding request headers (User-Agent) or using a different URL."
+                ),
+            )
+        # Otherwise return a 502 Bad Gateway to indicate upstream failure.
+        raise HTTPException(status_code=502, detail=str(exc))
+    except Exception as exc:
+        logger.exception("Unexpected facade error during scrape %s", request.url)
+        raise HTTPException(status_code=500, detail="internal server error")
 
     # `result` is a domain ScrapeResult; convert to JSON-friendly structure
     return JSONResponse(
