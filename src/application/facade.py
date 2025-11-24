@@ -20,8 +20,15 @@ class ApplicationFacade:
     ):
         self.project_name = project_name
         self.environment = environment
-        # use provided service or default domain implementation
-        self.scrape_service: ScrapeService = scrape_service or ScrapeService()
+        # use provided service or build a default one using the HTTP adapter
+        if scrape_service is None:
+            from src.adapters.http.scrape_provider_http import HttpxScrapeProvider
+
+            provider = HttpxScrapeProvider()
+            scrape_service = ScrapeService(provider=provider)
+
+        # single annotated assignment to keep mypy happy
+        self.scrape_service: ScrapeService = scrape_service
 
     def health_check(self):
         logger.info("Facade: health_check called")

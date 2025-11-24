@@ -2,20 +2,24 @@ from __future__ import annotations
 
 from typing import Dict
 
-import httpx
 from bs4 import BeautifulSoup
 
 from src.domain.exceptions import ScrapeError
+from src.domain.ports.scrape_provider import ScrapeProvider
 from src.domain.scrape import ScrapeRequest, ScrapeResult
 from src.log import logger
 
 
 class ScrapeService:
-    """Domain service that fetches a URL and extracts items using CSS selectors.
+    """Domain service that parses HTML obtained from a ScrapeProvider.
 
-    This service returns domain `ScrapeResult` objects so the application
-    facade and adapters work with typed domain objects.
+    The domain service focuses on parsing and transformation. Network IO is
+    delegated to the `ScrapeProvider` outbound port so the domain remains
+    independent of httpx or other HTTP clients.
     """
+
+    def __init__(self, provider: ScrapeProvider):
+        self.provider = provider
 
     async def scrape(self, request: ScrapeRequest) -> ScrapeResult:
         logger.info(
@@ -24,32 +28,14 @@ class ScrapeService:
             list(request.selectors.keys()),
         )
 
-        # Prepare headers (ensure we send a reasonable User-Agent by default).
-        headers = dict(request.headers or {})
-        if "User-Agent" not in {k.title(): v for k, v in headers.items()}:
-            headers.setdefault(
-                "User-Agent",
-                (
-                    "Mozilla/5.0 (compatible; web-scraping-backend/1.0; "
-                    "+https://example.local)"
-                ),
-            )
-
-        timeout_value = request.timeout or 10.0
-
+        # Delegate network fetching to the provider (outbound port).
         try:
-            async with httpx.AsyncClient(timeout=timeout_value) as client:
-                resp = await client.get(request.url, headers=headers)
-                # raise_for_status will raise httpx.HTTPStatusError for 4xx/5xx
-                resp.raise_for_status()
-                content = resp.text
-        except httpx.HTTPStatusError as exc:
-            status = exc.response.status_code if exc.response is not None else None
-            logger.error("HTTP error while fetching %s status=%s", request.url, status)
-            raise ScrapeError(f"HTTP error: {exc}", status_code=status)
-        except httpx.RequestError as exc:
-            logger.error("Request error while fetching %s: %s", request.url, exc)
-            raise ScrapeError(f"Request error: {exc}")
+            content = await self.provider.fetch(
+                request.url, headers=request.headers, timeout=request.timeout
+            )
+        except ScrapeError:
+            # propagate domain scraping/network errors
+            raise
 
         soup = BeautifulSoup(content, "html.parser")
         data: Dict[str, list[str]] = {}

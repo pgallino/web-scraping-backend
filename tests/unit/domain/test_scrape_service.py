@@ -4,28 +4,12 @@ from src.domain.scrape_service import ScrapeService
 from src.domain.scrape import ScrapeRequest
 
 
-class FakeResponse:
-    def __init__(self, text, status_code=200):
-        self.text = text
-        self.status_code = status_code
+class FakeProvider:
+    def __init__(self, text: str):
+        self._text = text
 
-    def raise_for_status(self):
-        if self.status_code >= 400:
-            raise Exception(f"HTTP {self.status_code}")
-
-
-class FakeAsyncClient:
-    def __init__(self, text, status_code=200, *a, **kw):
-        self._resp = FakeResponse(text, status_code)
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb):
-        return False
-
-    async def get(self, url, headers=None):
-        return self._resp
+    async def fetch(self, url: str, headers=None, timeout=None):
+        return self._text
 
 
 @pytest.mark.asyncio
@@ -40,10 +24,7 @@ async def test_scrape_service_extracts_selectors(monkeypatch):
     </html>
     """
 
-    # patch httpx.AsyncClient constructor inside the domain service module
-    monkeypatch.setattr("src.domain.scrape_service.httpx.AsyncClient", lambda *a, **k: FakeAsyncClient(html))
-
-    svc = ScrapeService()
+    svc = ScrapeService(provider=FakeProvider(html))
     req = ScrapeRequest(url="https://example.com", selectors={"title": "h1", "price": ".price", "links": "a"})
 
     result = await svc.scrape(req)

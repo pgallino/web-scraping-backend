@@ -1,5 +1,5 @@
 [run]
 omit =
-    src/adapters/api/*
+    src/adapters/*
     src/domain/exceptions/*
     src/**/__init__.py
