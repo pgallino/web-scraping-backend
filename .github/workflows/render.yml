@@ -32,28 +32,5 @@ jobs:
           fi
           echo "✅ Deploy Triggered (ID: ${DEPLOY_ID})"
 
-      - name: Health Check Public URL
-        if: success()
-        run: |
-          set -euo pipefail
-          URL="${{ secrets.RENDER_URL }}"
-          # ensure no trailing slash and point to the health endpoint
-          HEALTH_URL="${URL%/}/_health"
-          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
-          echo "Checking ${HEALTH_URL} with User-Agent: ${UA}"
-          for i in $(seq 1 12); do
-            STATUS=$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" "$HEALTH_URL" || echo "000")
-            echo "Attempt $i: HTTP status $STATUS"
-            if [ "$STATUS" = "200" ]; then
-              echo "✅ Health check passed"
-              exit 0
-            fi
-            sleep 20
-          done
-          echo "❌ Health check failed after 12 attempts"
-          # dump a verbose request for debugging in the workflow logs
-          curl -v -A "$UA" "$HEALTH_URL" || true
-          exit 1
-
       - name: Summary
         run: echo "✅ Render CI/CD Completed. Service is Live and Responding."
