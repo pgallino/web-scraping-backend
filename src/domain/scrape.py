@@ -8,6 +8,8 @@ class ScrapeRequest:
     selectors: Dict[str, str]
     headers: Optional[Dict[str, str]] = None
     timeout: Optional[float] = 10.0
+    # If False, the provider should skip robots.txt checks. Default True.
+    respect_robots: Optional[bool] = True
 
 
 @dataclass

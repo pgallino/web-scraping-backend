@@ -31,7 +31,14 @@ class ScrapeService:
         # Delegate network fetching to the provider (outbound port).
         try:
             content = await self.provider.fetch(
-                request.url, headers=request.headers, timeout=request.timeout
+                request.url,
+                headers=request.headers,
+                timeout=request.timeout,
+                respect_robots=(
+                    request.respect_robots
+                    if request.respect_robots is not None
+                    else True
+                ),
             )
         except ScrapeError:
             # propagate domain scraping/network errors

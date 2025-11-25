@@ -8,8 +8,11 @@ class FakeProvider:
     def __init__(self, text: str):
         self._text = text
 
-    async def fetch(self, url: str, headers=None, timeout=None):
-        return self._text
+    # keep signature compatible with ScrapeProvider.fetch signature used in
+    # production (includes respect_robots) so tests don't break when we add
+    # parameters to the protocol.
+    async def fetch(self, url: str, headers=None, timeout=None, respect_robots: bool = True):
+      return self._text
 
 
 @pytest.mark.asyncio

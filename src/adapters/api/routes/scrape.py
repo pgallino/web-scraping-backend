@@ -18,6 +18,8 @@ class ScrapeRequest(BaseModel):
     # optional headers to send with the request
     headers: Dict[str, str] | None = None
     timeout: float | None = 10.0
+    # If provided and false, the server will skip robots.txt checks (useful for dev)
+    respect_robots: bool | None = True
 
 
 @router.post("/scrape", response_model=None, status_code=status.HTTP_200_OK)
@@ -38,6 +40,9 @@ async def scrape_route(request: ScrapeRequest):
         selectors=request.selectors,
         headers=request.headers,
         timeout=request.timeout,
+        respect_robots=(
+            request.respect_robots if request.respect_robots is not None else True
+        ),
     )
     try:
         result = await api_facade.scrape(domain_req)

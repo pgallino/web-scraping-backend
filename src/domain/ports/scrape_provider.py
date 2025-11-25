@@ -11,7 +11,11 @@ class ScrapeProvider(Protocol):
     """
 
     async def fetch(
-        self, url: str, headers: dict | None = None, timeout: float | None = None
+        self,
+        url: str,
+        headers: dict | None = None,
+        timeout: float | None = None,
+        respect_robots: bool = True,
     ) -> str:
         """Fetch the raw HTML content for `url`.
 
